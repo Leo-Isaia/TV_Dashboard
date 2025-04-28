@@ -5,7 +5,7 @@ Follow the news or watch several live streams from YouTube on a single webpage w
 
 Just watch the following video to see how it works:
 
-  [![Watch the video](https://img.youtube.com/vi/arqPg0T0Kz0/maxresdefault.jpg)](https://youtu.be/arqPg0T0Kz0)
+  [![Watch the video](https://img.youtube.com/vi/arqPg0T0Kz0/maxresdefault.jpg)](https://youtu.be/87D_MNrtBYs)
 
 
   You can:
