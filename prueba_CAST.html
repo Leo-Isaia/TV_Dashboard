@@ -1,89 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Cast YouTube Robust</title>
-    <!-- 1) Cargamos el sender SDK -->
-    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 2rem;
-      }
-      #castBtn {
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Prueba Robust de Google Cast (YouTube)</h1>
-    <!-- 2) Botón manual, además del launcher nativo -->
-    <button id="castBtn">Iniciar Cast de YouTube</button>
-    <google-cast-launcher>🔍</google-cast-launcher>
+<head>
+  <meta charset="UTF-8">
+  <title>Cast MP4 Demo</title>
+  <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</head>
+<body>
+  <h1>Demo Cast MP4 (sin pagar ni registrar)</h1>
+  <google-cast-launcher></google-cast-launcher>
+  <button id="play">Enviar Demo</button>
 
-    <script>
-      const VIDEO_ID = "cb12KmMMDJA"; // tu video
+  <script>
+    const SAMPLE_MP4 = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-      // 3) Esperamos a que el SDK esté listo
-      window.__onGCastApiAvailable = function (isAvailable) {
-        if (isAvailable && window.cast && cast.framework) {
-          initCast();
-        } else {
-          console.error("Cast API no disponible o incompleta");
-          alert("Error: Cast API no disponible");
-        }
-      };
-
-      function initCast() {
-        const ctx = cast.framework.CastContext.getInstance();
-        ctx.setOptions({
-          // Receiver oficial de YouTube
-          receiverApplicationId: "YouTube",
-          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+    window.__onGCastApiAvailable = function(isAvailable) {
+      if (isAvailable && window.cast && cast.framework) {
+        cast.framework.CastContext.getInstance().setOptions({
+          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.TAB_AND_ORIGIN_SCOPED
         });
-
-        // Detectar cambios de estado
-        ctx.addEventListener(
-          cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-          (e) => {
-            console.log("SESSION_STATE_CHANGED →", e.sessionState);
-          }
-        );
-
-        // Asignamos al botón
-        document.getElementById("castBtn").onclick = () => {
-          startCasting();
-        };
+      } else {
+        alert("Cast API no disponible");
       }
+    };
 
-      function startCasting() {
-        const ctx = cast.framework.CastContext.getInstance();
-
-        // 4) Pedimos (o reutilizamos) la sesión Cast
-        ctx
-          .requestSession()
-          .then((session) => {
-            // 5) Cuando hay sesión, enviamos el mensaje MDX de YouTube
-            const namespace = "urn:x-cast:com.google.youtube.mdx";
-            const message = {
-              type: "flingVideo",
-              data: {
-                videoId: VIDEO_ID,
-                currentTime: 0,
-              },
-            };
-            return session.sendMessage(namespace, message);
-          })
-          .then(() => {
-            console.log("✅ Video enviado OK");
-            alert("✅ Video enviado a tu Chromecast");
-          })
-          .catch((err) => {
-            console.error("❌ Error casteando:", err);
-            alert("Error casteando: " + err);
-          });
-      }
-    </script>
-  </body>
+    document.getElementById('play').onclick = () => {
+      const ctx = cast.framework.CastContext.getInstance();
+      ctx.requestSession()
+        .then(session => {
+          const mediaInfo = new chrome.cast.media.MediaInfo(SAMPLE_MP4, 'video/mp4');
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          return session.loadMedia(request);
+        })
+        .then(() => alert("✅ Vídeo MP4 casteado"))
+        .catch(err => alert("❌ Error casteando: " + err));
+    };
+  </script>
+</body>
 </html>
