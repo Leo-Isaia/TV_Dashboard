@@ -1579,7 +1579,22 @@
       // Inicialización de Google Cast
       window.__onGCastApiAvailable = function (isAvailable) {
         if (isAvailable) {
-          initializeCastApi();
+          cast.framework.CastContext.getInstance().setOptions({
+            receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+          });
+
+          // Mostrar el estado inicial
+          const castState = cast.framework.CastContext.getInstance().getCastState();
+          Swal.fire("Estado inicial de Cast", `Estado: ${castState}`, "info");
+
+          // Escuchar cambios en la disponibilidad de dispositivos
+          cast.framework.CastContext.getInstance().addEventListener(
+            cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+            function (event) {
+              Swal.fire("Cambio de estado de Cast", `Nuevo estado: ${event.castState}`, "info");
+            }
+          );
         } else {
           Swal.fire("Error", "Google Cast API no está disponible.", "error");
         }
@@ -1592,9 +1607,22 @@
           return;
         }
 
+        // Verificar la disponibilidad del receptor
         cast.framework.CastContext.getInstance().setOptions({
           receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
           autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
+
+        // Añadir un listener para ver si hay dispositivos conectados
+        cast.framework.CastContext.getInstance().addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, function (event) {
+          const sessionState = event.sessionState;
+          console.log("Estado de la sesión de cast:", sessionState);
+
+          if (sessionState === cast.framework.CastContext.SessionState.NO_SESSION) {
+            Swal.fire("Error", "No hay un dispositivo conectado para transmitir. Asegúrate de que el dispositivo esté disponible y en la misma red Wi-Fi.", "error");
+          } else if (sessionState === cast.framework.CastContext.SessionState.SESSION_STARTED) {
+            Swal.fire("Éxito", "Dispositivo conectado correctamente. Iniciando transmisión...", "success");
+          }
         });
 
         // Agregar listener al botón de cast
@@ -1611,13 +1639,6 @@
 
         const canalData = canales[selectedChannel];
 
-        // Mostrar los datos del canal seleccionado
-        Swal.fire({
-          title: "Datos del canal seleccionado",
-          html: `<strong>Canal:</strong> ${selectedChannel}<br><strong>Datos:</strong> ${JSON.stringify(canalData)}`,
-          icon: "info"
-        });
-
         if (!canalData) {
           Swal.fire("Error", "Canal no encontrado en la base de datos.", "error");
           return;
@@ -1629,21 +1650,13 @@
         let mediaInfo;
 
         if (tipo === "youtube") {
-          // Para YouTube, necesitamos la URL del video
           const videoUrl = `https://www.youtube.com/watch?v=${recursoId}`;
-
-          // Verificar si la URL de YouTube es válida
-          Swal.fire("Información", `URL de YouTube: ${videoUrl}`, "info");
-
           mediaInfo = new chrome.cast.media.MediaInfo(videoUrl, 'application/x-mpegURL');
 
-          // Opcional: Metadatos para mostrar en el dispositivo Cast
           const metadata = new chrome.cast.media.GenericMediaMetadata();
           metadata.title = selectedChannel;
           mediaInfo.metadata = metadata;
         } else {
-          // Para URLs externas, usamos directamente la URL
-          Swal.fire("Información", `URL externa: ${recursoId}`, "info");
           mediaInfo = new chrome.cast.media.MediaInfo(recursoId, 'video/mp4');
 
           const metadata = new chrome.cast.media.GenericMediaMetadata();
