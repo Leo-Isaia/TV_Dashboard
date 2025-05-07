@@ -1,5 +1,5 @@
 # 📺 TV Dash
-Watch multiple live YouTube channels in one place.
+Watch multiple live channels (Youtube Streaming and Externals URLS allowed)  in one place.
 
 You can test it yourself: https://leo-isaia.github.io/TV_Dashboard/dashboard.html
 
