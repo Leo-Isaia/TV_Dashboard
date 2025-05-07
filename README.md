@@ -1,6 +1,8 @@
 # 📺 TV Dash
 Watch multiple live YouTube channels in one place.
 
+You can test it yourself: https://leo-isaia.github.io/TV_Dashboard/dashboard.html
+
 Follow the news or watch several live streams from YouTube on a single webpage with this simple project.
 
 Just watch the following video to see how it works:
